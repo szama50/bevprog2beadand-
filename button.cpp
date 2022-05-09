@@ -20,7 +20,7 @@ void Button::place()
         gout << color(0,0,0);
     gout << box(size_x_px-2*frame_size,size_y_px-2*frame_size);
     gout << color(color_red,color_green,color_blue);
-    gout << move_to(position_x+0.5*(size_x_px-gout.twidth(title)),position_y+0.5*(size_y_px-gout.cascent()-gout.cdescent()));
+    gout << move_to(position_x+0.5*(size_x_px-gout.twidth(title))+5,position_y+0.5*(size_y_px-gout.cascent()-gout.cdescent()));
     gout << text(title);
 }
 
