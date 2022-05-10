@@ -61,6 +61,40 @@ void in_menu(vector<Widget*> menu, event ev, bool& single_player)
     }
 }
 
+bool allowed_move(int size_of_table,int focus, vector<Widget*> game)
+{
+    vector<int> nearbyareas;
+    if (focus==-1)
+        return false;
+    if (focus == 0) //top left corner
+        nearbyareas = {focus+1,focus+size_of_table,focus+size_of_table+1};
+    else if (focus == size_of_table-1) //top right corner
+        nearbyareas = {focus-1,focus+size_of_table,focus+size_of_table-1};
+    else if (focus == int(game.size()-size_of_table)) //bottom left corner
+        nearbyareas = {focus+1,focus-size_of_table,focus-size_of_table+1};
+    else if (focus == int(game.size()-1)) //bottom right corner
+        nearbyareas = {focus-1,focus-size_of_table,focus-size_of_table-1};
+    else if (focus % size_of_table == size_of_table-1)
+        nearbyareas = {focus-1,focus-size_of_table,focus+size_of_table,focus-size_of_table-1,focus+size_of_table-1};
+    else if (focus % size_of_table == 0)
+        nearbyareas = {focus+1,focus-size_of_table,focus+size_of_table,focus-size_of_table+1,focus+size_of_table+1};
+    else if (focus<size_of_table)
+        nearbyareas = {focus+1,focus-1,focus+size_of_table,focus+size_of_table-1,focus+size_of_table+1};
+    else if (focus>int(game.size()-1-size_of_table))
+        nearbyareas = {focus+1,focus-1,focus-size_of_table,focus-size_of_table+1,focus-size_of_table-1};
+    else
+        nearbyareas = {focus+1,focus-1,focus+size_of_table,focus+size_of_table-1,focus+size_of_table+1,focus-size_of_table,
+                      focus-size_of_table-1,focus-size_of_table+1};
+    for (size_t i = 0; i < nearbyareas.size(); i++)
+    {
+        if (game[nearbyareas[i]]->string_getter() != " ")
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void single_player_game(vector<Widget*> game,event ev)
 {
     for (size_t i = 0; i < game.size(); i++)
@@ -71,13 +105,27 @@ void single_player_game(vector<Widget*> game,event ev)
     }
 }
 
-void multi_player_game(vector<Widget*> game,event ev)
+void multi_player_game(vector<Widget*> game,int size_of_table,event ev)
 {
+    int focus = -1;
+    static int counter = 1;
     for (size_t i = 0; i < game.size(); i++)
     {
-        game[i]->place();
         game[i]->setactivity(ev);
-        game[i]->event_handler(ev);
+        game[i]->place();
+        if (game[i]->bool_getter())
+            focus = i;
+    }
+    //First move
+    if (counter == 1 && ev.button == btn_left && focus!=-1)
+    {
+        counter++;
+        game[focus]->event_handler(ev);
+    }
+    //First move
+    if (ev.button == btn_left && allowed_move(size_of_table,focus,game))
+    {
+        game[focus]->event_handler(ev);
     }
 }
 
@@ -88,28 +136,28 @@ void Application::event_loop()
     gout << refresh;
     event ev;
 
+    int size_of_map = 15;
     while(gin >> ev && ev.button != key_escape)
     {
         if (!ingame)
         {
             this->clear_screen();
-            gout.load_font("LiberationSans-Regular.ttf",19);
             in_menu(menu,ev,single_player);
             if (ingame)
             {
-                this->generate_table(search_correct_value(menu));
+                size_of_map = search_correct_value(menu);
+                this->generate_table(size_of_map);
             }
         }
         else
         {
-            gout.load_font("LiberationSans-Regular.ttf",20);
             if (single_player)
             {
                 single_player_game(game,ev);
             }
             else
             {
-                multi_player_game(game,ev);
+                multi_player_game(game,size_of_map,ev);
             }
         }
         gout << refresh;

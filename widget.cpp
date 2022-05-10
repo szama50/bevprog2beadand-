@@ -10,6 +10,11 @@ void Widget::setactivity(genv::event ev)
     active = ((ev.pos_x>=position_x) && (ev.pos_x<=position_x+size_x_px) && (ev.pos_y>=position_y) && (ev.pos_y<=position_y+size_y_px));
 }
 
+bool Widget::bool_getter()
+{
+    return active;
+}
+
 void Widget::position_correction()
 {
     return;

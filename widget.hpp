@@ -39,6 +39,7 @@ public:
     virtual void position_correction();
     virtual std::string string_getter();
     virtual double int_getter();
+    bool bool_getter();
 };
 
 #endif // WIDGET_HPP
