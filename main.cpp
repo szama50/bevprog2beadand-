@@ -20,7 +20,7 @@ public:
 
 int main()
 {
-    App* a = new App(920,20);
+    App* a = new App(800,20);
     a->event_loop();
     return 0;
 }

@@ -47,7 +47,7 @@ void Checkbox::place()
     gout << color(color_red,color_green,color_blue);
     gout << move_to(position_x,position_y);
     gout << box(size_x_px,size_y_px);
-    gout << color(0,0,0);
+    gout << color(255,255,255);
     gout << move_to(position_x+frame_size,position_y+frame_size);
     gout << box(size_x_px-2*frame_size,size_y_px-2*frame_size);
     gout << stamp(c,position_x+2*frame_size,position_y+2*frame_size);

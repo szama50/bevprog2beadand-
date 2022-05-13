@@ -95,6 +95,82 @@ bool allowed_move(int size_of_table,int focus, vector<Widget*> game)
     return false;
 }
 
+string diagonal_search(int vertical,int opposite,vector<Widget*> game,int size_of_table)
+{
+    int x_counter = 0;
+    int o_counter = 0;
+    int k = 0;
+    int c = 2;
+    if (vertical == size_of_table && opposite == 1)
+        c = 0;
+    for (int i = 0; i < size_of_table; i++)
+    {
+        k = 0;
+        while(k<size_of_table-i)
+        {
+            if (game[i*vertical-c*i*opposite+opposite*(size_of_table-1)+k*(size_of_table+1+opposite*(-2))]->string_getter() == "X")
+                x_counter++;
+            else
+                x_counter = 0;
+            if (x_counter == 5)
+                return "X";
+            if (game[i*vertical-c*i*opposite+opposite*(size_of_table-1)+k*(size_of_table+1+opposite*(-2))]->string_getter() == "O")
+                o_counter++;
+            else
+                o_counter = 0;
+            if (o_counter == 5)
+                return "O";
+            k++;
+        }
+        x_counter = 0;
+        o_counter = 0;
+    }
+    return " ";
+}
+
+string horizontal_vertical_search(bool vertical,vector<Widget*> game, int size_of_table)
+{
+    int ocounter = 0;
+    int xcounter = 0;
+    for (int i = 0; i < size_of_table; i++)
+    {
+        for (int j = 0; j < size_of_table; j++)
+        {
+            int index = i*size_of_table+j;
+            if (vertical)
+                index = i+j*size_of_table;
+            if (game[index]->string_getter() == "X")
+                xcounter++;
+            else
+                xcounter = 0;
+            if (xcounter == 5)
+                return "X";
+            if (game[index]->string_getter() == "O")
+                ocounter++;
+            else
+                ocounter = 0;
+            if (ocounter == 5)
+                return "O";
+        }
+    }
+    return " ";
+}
+
+string gameover(vector<Widget*> game, int size_of_table)
+{
+    if (horizontal_vertical_search(false,game,size_of_table) == "X" || horizontal_vertical_search(true,game,size_of_table) == "X")
+        return "X";
+    if (horizontal_vertical_search(false,game,size_of_table) == "O" || horizontal_vertical_search(true,game,size_of_table) == "O")
+        return "O";
+    if (diagonal_search(1,0,game,size_of_table) == "X" || diagonal_search(size_of_table,0,game,size_of_table) == "X"
+            || diagonal_search(1,1,game,size_of_table) == "X" || diagonal_search(size_of_table,1,game,size_of_table) == "X")
+        return "X";
+    if (diagonal_search(1,0,game,size_of_table) == "O" || diagonal_search(size_of_table,0,game,size_of_table) == "O"
+            || diagonal_search(1,1,game,size_of_table) == "O" || diagonal_search(size_of_table,1,game,size_of_table) == "O")
+        return "O";
+    return " ";
+}
+
 void single_player_game(vector<Widget*> game,event ev)
 {
     for (size_t i = 0; i < game.size(); i++)
@@ -116,6 +192,7 @@ void multi_player_game(vector<Widget*> game,int size_of_table,event ev)
         if (game[i]->bool_getter())
             focus = i;
     }
+
     //First move
     if (counter == 1 && ev.button == btn_left && focus!=-1)
     {
@@ -123,9 +200,19 @@ void multi_player_game(vector<Widget*> game,int size_of_table,event ev)
         game[focus]->event_handler(ev);
     }
     //First move
+
     if (ev.button == btn_left && allowed_move(size_of_table,focus,game))
     {
         game[focus]->event_handler(ev);
+    }
+
+    string gameover_status = gameover(game,size_of_table);
+    if (gameover_status != " ")
+    {
+        if (gameover_status == "X")
+            cout << "X wins!" << endl;
+        else
+            cout << "O wins!" << endl;
     }
 }
 
