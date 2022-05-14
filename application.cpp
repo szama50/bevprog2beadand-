@@ -13,6 +13,7 @@ Application::Application(int window_wh, int game_frame_): window_width_height(wi
     gout.open(window_wh,window_wh);
     gout.load_font("LiberationSans-Regular.ttf",19);
     ingame = false;
+    game_over = false;
 }
 
 int search_correct_value(vector<Widget*> menu)
@@ -29,11 +30,14 @@ int search_correct_value(vector<Widget*> menu)
 
 void Application::generate_table(int size_of_table)
 {
+    for (size_t i = 0; i < game.size(); i++)
+        delete game[i];
+    vector<Widget*> g_;
     int j = 0;
     int k = 0;
     for (int i = 0; i < pow(size_of_table,2); i++)
     {
-        game.push_back(new Checkbox(j*(window_width_height-2*game_frame)/size_of_table+game_frame,
+        g_.push_back(new Checkbox(j*(window_width_height-2*game_frame)/size_of_table+game_frame,
                                     k*(window_width_height-2*game_frame)/size_of_table+game_frame,
                                     (window_width_height-2*game_frame)/size_of_table+1,
                                     (window_width_height-2*game_frame)/size_of_table+1,2,0,0,255,this));
@@ -44,6 +48,7 @@ void Application::generate_table(int size_of_table)
             j = 0;
         }
     }
+    game = g_;
 }
 
 void in_menu(vector<Widget*> menu, event ev, bool& single_player)
@@ -54,7 +59,7 @@ void in_menu(vector<Widget*> menu, event ev, bool& single_player)
         menu[i]->place();
         menu[i]->event_handler(ev);
         menu[i]->position_correction();
-        if (menu[i]->string_getter()=="Single player")
+        if (menu[i]->string_getter()=="Single Player")
             single_player = true;
         if (menu[i]->string_getter()=="Multiplayer")
             single_player = false;
@@ -156,6 +161,17 @@ string horizontal_vertical_search(bool vertical,vector<Widget*> game, int size_o
     return " ";
 }
 
+bool map_is_full(vector<Widget*> game, int size_of_table)
+{
+    int counter = 0;
+    for (size_t i = 0; i < game.size(); i++)
+    {
+        if (game[i]->string_getter() != " ")
+            counter++;
+    }
+    return (counter==size_of_table*size_of_table);
+}
+
 string gameover(vector<Widget*> game, int size_of_table)
 {
     if (horizontal_vertical_search(false,game,size_of_table) == "X" || horizontal_vertical_search(true,game,size_of_table) == "X")
@@ -168,51 +184,86 @@ string gameover(vector<Widget*> game, int size_of_table)
     if (diagonal_search(1,0,game,size_of_table) == "O" || diagonal_search(size_of_table,0,game,size_of_table) == "O"
             || diagonal_search(1,1,game,size_of_table) == "O" || diagonal_search(size_of_table,1,game,size_of_table) == "O")
         return "O";
+    if (map_is_full(game,size_of_table))
+        return "no one, map is full";
     return " ";
 }
 
-void single_player_game(vector<Widget*> game,event ev)
+int find_focus(vector<Widget*> game,event ev)
 {
     for (size_t i = 0; i < game.size(); i++)
     {
-        game[i]->place();
         game[i]->setactivity(ev);
-        game[i]->event_handler(ev);
+        if (game[i]->bool_getter())
+        {
+            return i;
+        }
     }
+    return -1;
 }
 
-void multi_player_game(vector<Widget*> game,int size_of_table,event ev)
+void single_player_game(vector<Widget*> game,int size_of_table,int& counter,event ev,bool& xturn)
 {
-    int focus = -1;
-    static int counter = 1;
     for (size_t i = 0; i < game.size(); i++)
-    {
-        game[i]->setactivity(ev);
         game[i]->place();
-        if (game[i]->bool_getter())
-            focus = i;
-    }
+    int focus = find_focus(game,ev);
 
     //First move
     if (counter == 1 && ev.button == btn_left && focus!=-1)
     {
         counter++;
-        game[focus]->event_handler(ev);
+        game[focus]->modify_state("X");
+        xturn = false;
     }
     //First move
 
-    if (ev.button == btn_left && allowed_move(size_of_table,focus,game))
+    if (xturn && ev.button == btn_left && allowed_move(size_of_table,focus,game))
     {
-        game[focus]->event_handler(ev);
+        if (game[focus]->string_getter() == " ")
+        {
+            game[focus]->modify_state("X");
+            xturn = false;
+        }
     }
 
-    string gameover_status = gameover(game,size_of_table);
-    if (gameover_status != " ")
+    else if (!xturn)
     {
-        if (gameover_status == "X")
-            cout << "X wins!" << endl;
-        else
-            cout << "O wins!" << endl;
+        vector<int> allowed_areas;
+        for (size_t i = 0; i < game.size(); i++)
+        {
+            if (allowed_move(size_of_table,i,game) && game[i]->string_getter() == " ")
+                allowed_areas.push_back(i);
+        }
+        game[allowed_areas[rand() % allowed_areas.size()]]->modify_state("O");
+        xturn = true;
+    }
+}
+
+void multi_player_game(vector<Widget*> game,int size_of_table,int& counter,event ev,bool& xturn)
+{
+    for (size_t i = 0; i < game.size(); i++)
+        game[i]->place();
+    int focus = find_focus(game,ev);
+
+    //First move
+    if (counter == 1 && ev.button == btn_left && focus!=-1)
+    {
+        counter++;
+        game[focus]->modify_state("X");
+        xturn = false;
+    }
+    //First move
+
+    else if (ev.button == btn_left && allowed_move(size_of_table,focus,game))
+    {
+        if (game[focus]->string_getter() == " ")
+        {
+            if (xturn)
+                game[focus]->modify_state("X");
+            else
+                game[focus]->modify_state("O");
+            xturn = !xturn;
+        }
     }
 }
 
@@ -224,7 +275,9 @@ void Application::event_loop()
     event ev;
 
     int size_of_map = 15;
-    while(gin >> ev && ev.button != key_escape)
+    int counter = 1;
+    bool xturn = true;
+    while(gin >> ev && ev.keycode != key_escape)
     {
         if (!ingame)
         {
@@ -238,13 +291,24 @@ void Application::event_loop()
         }
         else
         {
-            if (single_player)
+            game_over = gameover(game,size_of_map);
+            if (game_over != " ")
             {
-                single_player_game(game,ev);
+                counter = 1;
+                xturn = true;
+                for (size_t i = 0; i < over.size(); i++)
+                {
+                    over[i]->place();
+                    over[i]->setactivity(ev);
+                    over[i]->event_handler(ev);
+                }
             }
             else
             {
-                multi_player_game(game,size_of_map,ev);
+                if (single_player)
+                    single_player_game(game,size_of_map,counter,ev,xturn);
+                else
+                    multi_player_game(game,size_of_map,counter,ev,xturn);
             }
         }
         gout << refresh;
@@ -268,9 +332,19 @@ void Application::register_menu_widget(Widget * widget)
     menu.push_back(widget);
 }
 
+void Application::register_over_widget(Widget* widget)
+{
+    over.push_back(widget);
+}
+
 void Application::change_ingame_status()
 {
     ingame = !ingame;
+}
+
+string Application::game_over_getter()
+{
+    return game_over;
 }
 
 

@@ -29,3 +29,8 @@ double Widget::int_getter()
 {
     return 0.1;
 }
+
+void Widget::modify_state(std::string)
+{
+    return;
+}

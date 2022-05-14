@@ -3,6 +3,8 @@
 #include <string>
 #include <cmath>
 
+#include <vector>
+
 using namespace genv;
 
 Checkbox::Checkbox(int pos_x, int pos_y, int size_x, int size_y, int frame_size_, int r, int g, int b, Application* p)
@@ -53,23 +55,19 @@ void Checkbox::place()
     gout << stamp(c,position_x+2*frame_size,position_y+2*frame_size);
 }
 
-void Checkbox::event_handler(event ev)
+void Checkbox::event_handler(event)
 {
-    static long long int serial_number = 1;
-    if (state == " " && active && ev.type==ev_mouse && ev.button==btn_left)
-    {
-        if (serial_number % 2 == 1)
-        {
-            c = xmark(size_x_px-4*frame_size,color_red,color_green,color_blue);
-            state = 'X';
-        }
-        else
-        {
-            c = circle(size_x_px-4*frame_size,color_red,color_green,color_blue);
-            state = 'O';
-        }
-        serial_number++;
-    }
+    return;
+}
+
+void Checkbox::modify_state(std::string s)
+{
+    if (state == " ")
+        state = s;
+    if (state == "X")
+        c = xmark(size_x_px-4*frame_size,color_red,color_green,color_blue);
+    if (state == "O")
+        c = circle(size_x_px-4*frame_size,color_red,color_green,color_blue);
 }
 
 std::string Checkbox::string_getter()

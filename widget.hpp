@@ -40,6 +40,7 @@ public:
     virtual std::string string_getter();
     virtual double int_getter();
     bool bool_getter();
+    virtual void modify_state(std::string);
 };
 
 #endif // WIDGET_HPP

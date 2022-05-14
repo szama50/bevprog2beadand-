@@ -13,6 +13,7 @@ public:
     void place() override;
     void event_handler(genv::event ev) override;
     std::string string_getter() override;
+    void modify_state(std::string) override;
 };
 
 #endif // CHECKBOX_HPP

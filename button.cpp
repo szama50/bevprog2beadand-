@@ -2,10 +2,13 @@
 
 using namespace genv;
 
-Button::Button(int pos_x, int pos_y, int size_x, int size_y, int frame_size_, int r, int g, int b, Application* p, std::string t)
+Button::Button(int pos_x, int pos_y, int size_x, int size_y, int frame_size_, int r, int g, int b, Application* p, std::string t,bool go)
     :Widget(pos_x,pos_y,size_x,size_y,frame_size_,r,g,b,p), title(t)
 {
-    parent->register_menu_widget(this);
+    if (go)
+        parent->register_over_widget(this);
+    else
+        parent->register_menu_widget(this);
 }
 
 void Button::place()

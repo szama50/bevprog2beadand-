@@ -11,7 +11,7 @@ class Button : public Widget
 private:
     std::string title;
 public:
-    Button(int pos_x, int pos_y, int size_x, int size_y, int frame_size_, int r, int g, int b, Application* p, std::string t);
+    Button(int pos_x, int pos_y, int size_x, int size_y, int frame_size_, int r, int g, int b, Application* p, std::string t, bool go);
     void place() override;
     void event_handler(genv::event ev) override;
 };
